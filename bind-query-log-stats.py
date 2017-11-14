@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Program: dnsrecon.py
+# Program: bind-query-log-statistics.py
 # Author: Matty < matty91 at gmail dot com >
 # Current Version: 1.0
 # Last Updated: 11-11-2016
