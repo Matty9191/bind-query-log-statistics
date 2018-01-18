@@ -156,7 +156,7 @@ def process_query(query):
         18-Jan-2018 13:13:07.889 client 1.2.3.4#42872 (prefetch.net): \
         query: prefetch.net IN ANY + (1.2.3.4)
     """
-    words_to_strip = [ "query:", "info:", "client", "view", "standard:" ]
+    words_to_strip = [ "query:", "info:", "client", "view", "standard:", "queries:" ]
     chopped = ' '.join(i for i in query.split() if i not in words_to_strip).split()
 
     if len(chopped) == 7:
