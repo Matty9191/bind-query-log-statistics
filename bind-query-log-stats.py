@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # Program: bind-query-log-statistics.py
 # Author: Matty < matty91 at gmail dot com >
-# Current Version: 1.0
-# Last Updated: 11-11-2016
+# Current Version: 1.1
+# Last Updated: 01-18-2018
 # Version history:
+#   1.1 First attempt to normalize query log formats
 #   1.0 Initial Release
 # Purpose: Analyzes Bind query logs and produces a variety of query statistics.
 # License: 
@@ -150,33 +151,30 @@ def process_query(query):
         # Bind 9.3 w/o views
         08-Nov-2016 14:05:59.996 query: info: client 1.2.3.4#7619: \
         query: 10.10.10.10.in-addr.arpa IN PTR -E
-    """
-    chopped = query.split()
 
-    if len(chopped) < 11:
+        # Bind 9.10
+        18-Jan-2018 13:13:07.889 client 1.2.3.4#42872 (prefetch.net): \
+        query: prefetch.net IN ANY + (1.2.3.4)
+    """
+    words_to_strip = [ "query:", "info:", "client", "view", "standard:" ]
+    chopped = ' '.join(i for i in query.split() if i not in words_to_strip).split()
+
+    if len(chopped) == 7:
+        timestamp = chopped[0] + " " + chopped[1]
+        client_ip = chopped[2].split("#")[0]
+        rr_type = chopped[5]
+        dns_question = chopped[3]
+
+    elif len(chopped) == 9:
+        timestamp = chopped[0] + " " + chopped[1]
+        client_ip = chopped[2].split("#")[0]
+        rr_type = chopped[6]
+        dns_question = chopped[4]
+
+    else:
         print "Unknown query log format"
         print "Offending line -> %s" % query
-
-    # Bind 9.3 query w/o views
-    if len(chopped) == 11:
-        timestamp = chopped[0] + " " + chopped[1]
-        client_ip = chopped[5].split("#")[0]
-        rr_type = chopped[9]
-        dns_question = chopped[7]
-
-    # Bind 9.3 query w/ views
-    elif len(chopped) == 13:
-        timestamp = chopped[0] + " " + chopped[1]
-        client_ip = chopped[5].split("#")[0]
-        rr_type = chopped[11]
-        dns_question = chopped[9]
-
-    # Bind 9.9 query w/ views
-    elif len(chopped) == 15:
-        timestamp = chopped[0] + " " + chopped[1]
-        client_ip = chopped[5].split("#")[0]
-        rr_type = chopped[12]
-        dns_question = chopped[10]
+        sys.exit(1)
 
     return timestamp, dns_question, rr_type, client_ip
 
