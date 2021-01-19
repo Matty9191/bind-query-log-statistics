@@ -7,7 +7,7 @@
 #   1.1 First attempt to normalize query log formats
 #   1.0 Initial Release
 # Purpose: Analyzes Bind query logs and produces a variety of query statistics.
-# License: 
+# License:
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -93,43 +93,43 @@ def generate_statistics(dns_question, rr_type, client_ip):
 
 def print_top_dns_requests(num_print):
     """ Print the top DNS questions that were asked """
-    print "\nTop ", num_print, " DNS names requested:"
+    print("\nTop ", num_print, " DNS names requested:")
     for query, _ in Counter(DNS_QUERIES).most_common(num_print):
-        print "  " + query + " : " + str(DNS_QUERIES[query])
+        print("  " + query + " : " + str(DNS_QUERIES[query]))
 
 
 def print_top_dns_clients(num_print):
     """ Print the top DNS_CLIENTS who asked the most questions """
-    print "\nTop ", num_print, " DNS clients:"
+    print("\nTop ", num_print, " DNS clients:")
     for client_ip, num_queries  in Counter(DNS_CLIENTS).most_common(num_print):
         try:
             client_name = socket.gethostbyaddr(client_ip)[0]
         except socket.herror:
             client_name = client_ip
-        print "  " + client_name + " : ", num_queries
+        print("  " + client_name + " : ", num_queries)
 
 
 def print_dns_resolution_matrix():
     """ Print a list of DNS requests and the
         DNS_CLIENTS who asked those questions
     """
-    print "\nDomain to client resolution matrix:"
+    print("\nDomain to client resolution matrix:")
     for domain in DNS_RESOLUTION_MATRIX:
-        print "\n  " + domain
+        print("\n  " + domain)
         for client_ip in DNS_RESOLUTION_MATRIX[domain]:
             try:
                 client_name = socket.gethostbyaddr(client_ip)[0]
             except socket.herror:
                 client_name = client_ip
-            print "  |-- " + client_name + " ", DNS_RESOLUTION_MATRIX[domain][client_ip]
+            print("  |-- " + client_name + " ", DNS_RESOLUTION_MATRIX[domain][client_ip])
 
 def print_dns_summary():
     """ Print a number of summary statistics """
-    print "\nSummary for %s - %s\n" % (FIRST_QUERY, LAST_QUERY)
-    print "%-25s : %d" % ("Total DNS_QUERIES processed", TOTAL_QUERIES)
+    print("\nSummary for %s - %s\n" % (FIRST_QUERY, LAST_QUERY))
+    print("%-25s : %d" % ("Total DNS_QUERIES processed", TOTAL_QUERIES))
 
     for rr_type, query_count in sorted(DNS_QUERY_TYPES.items(), key=lambda a: a[1], reverse=True):
-        print "  %-6s records requested : %d" % (rr_type, query_count)
+        print("  %-6s records requested : %d" % (rr_type, query_count))
 
 
 def process_query(query):
@@ -171,9 +171,15 @@ def process_query(query):
         rr_type = chopped[6]
         dns_question = chopped[4]
 
+    elif len(chopped) == 10:
+        timestamp = chopped[0] + " " + chopped[1]
+        client_ip = chopped[3].split("#")[0]
+        rr_type = chopped[7]
+        dns_question = chopped[5]
+
     else:
-        print "Unknown query log format"
-        print "Offending line -> %s" % query
+        print("Unknown query log format")
+        print("Offending line -> %s" % query)
         sys.exit(1)
 
     return timestamp, dns_question, rr_type, client_ip
@@ -216,7 +222,7 @@ def process_logs(logs):
     """
 
     for log in logs:
-        print "Processing logfile " + log
+        print("Processing logfile " + log)
         try:
             with open(log, 'r') as query_log:
                 for query in query_log:
@@ -226,7 +232,7 @@ def process_logs(logs):
                     if ENABLE_HISTOGRAMS:
                         populate_histograms(timestamp)
         except IOError:
-            print "Could not open file " + log + " for processing"
+            print("Could not open file " + log + " for processing")
             sys.exit(1)
 
 def populate_histograms(timestamp):
@@ -246,18 +252,18 @@ def create_histogram(label, dns_dict):
     LARGEST_VALUE = max(dns_dict.values())
     SCALE = 50.00 / LARGEST_VALUE
 
-    print "\nQueries per %s:" % label
-    for interval, queries in sorted(dns_dict.iteritems()):
+    print("\nQueries per %s:" % label)
+    for interval, queries in sorted(dns_dict.items()):
         hist_size = "*" * int(queries * SCALE)
-        print "  %2s: %s (%d)" % (interval, hist_size, queries)
+        print("  %2s: %s (%d)" % (interval, hist_size, queries))
 
 if __name__ == "__main__":
 
-    (COUNT, DOMAINS, LOGFILES, IPS_TO_EXCLUDE, NETS_TO_EXCLUDE, 
+    (COUNT, DOMAINS, LOGFILES, IPS_TO_EXCLUDE, NETS_TO_EXCLUDE,
      ENABLE_RESOLUTION_MATRIX, ENABLE_HISTOGRAMS) = processcli()
 
     if not LOGFILES:
-        print "No log files specified on command line"
+        print("No log files specified on command line")
         sys.exit(1)
 
     process_logs(LOGFILES)
