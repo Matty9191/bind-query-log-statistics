@@ -155,6 +155,10 @@ def process_query(query):
         # Bind 9.10
         18-Jan-2018 13:13:07.889 client 1.2.3.4#42872 (prefetch.net): \
         query: prefetch.net IN ANY + (1.2.3.4)
+
+        # Bind 9.11 with views
+        28-Sep-2023 08:28:13.176 info: client @0xfffffffffffff 1.2.3.4#49738 (prefetch.net): view VIEWNAME: query: prefetch.net IN A -E(0)DC (1.2.3.4)
+        
     """
     words_to_strip = [ "query:", "info:", "client", "view", "standard:", "queries:" ]
     chopped = ' '.join(i for i in query.split() if i not in words_to_strip).split()
@@ -170,6 +174,12 @@ def process_query(query):
         client_ip = chopped[2].split("#")[0]
         rr_type = chopped[6]
         dns_question = chopped[4]
+
+    elif len(chopped) == 11:
+        timestamp = chopped[0] + " " + chopped[1]
+        client_ip = chopped[3].split("#")[0]
+        rr_type = chopped[8]
+        dns_question = chopped[6]
 
     else:
         print "Unknown query log format"
